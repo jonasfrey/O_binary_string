@@ -179,7 +179,7 @@ class O_binary_string{
             this.o_canvas = document.createElement("canvas")
             this.o_canvas.width = n_width_engough
             this.o_canvas.height = n_height_enought
-            document.body.appendChild(this.o_canvas)
+            // document.body.appendChild(this.o_canvas)
             this.o_ctx = this.o_canvas.getContext("2d")
         }
     }
