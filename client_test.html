@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <style>
+            * {background:#111; color:#ddd}
+        </style>
+      <style>
+        canvas{
+            width: 100vw;
+            font-smooth: never;
+            -webkit-font-smoothing : none;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+      </style>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        
+        <script type="module">
+
+
+
+console.log("loaded")
+if(typeof Deno != 'undefined'){
+    
+    var {createCanvas}  = await import("https://deno.land/x/canvas/mod.ts")
+    // import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
+    console.warn(`
+    the module was imported in deno (https://deno.land/) which does not provide the document.createElement("canvas") by default, as a workaround 
+    the module canvas (https://deno.land/x/canvas) is imported which comes with some limitaions, if you want the full functionality of O_binary_string 
+    consider using it client side in a browser javascript engine
+    `)
+}
+class O_binary_string{
+    constructor(
+        s_string,
+        n_font_size_px,
+        s_font_url = "./fonts/visitor1.ttf"
+        ){
+        this.n_width_engough = n_font_size_px * 2 * s_string.length
+        if(typeof Deno != "undefined"){
+            this.o_canvas = createCanvas(this.n_width_engough,n_font_size_px);
+        }else{
+            this.o_canvas = document.createElement("canvas")
+            this.o_canvas.width = this.n_width_engough
+            this.o_canvas.height = n_font_size_px
+        }
+        this.s_string = s_string
+        this.n_font_size_px = n_font_size_px
+        this.o_ctx = this.o_canvas.getContext("2d")
+        this.s_font_url = s_font_url
+        this.a_bitmap = []
+        this.a_a_bitmap = [[]]
+
+    }
+    async f_init(){
+        var self = this
+        return new Promise(function(f_resolve){
+
+
+            // disaable antialiasing / make pixelated
+            self.o_ctx['imageSmoothingEnabled'] = false;       /* standard */
+            self.o_ctx['mozImageSmoothingEnabled'] = false;    /* Firefox */
+            self.o_ctx['oImageSmoothingEnabled'] = false;      /* Opera */
+            self.o_ctx['webkitImageSmoothingEnabled'] = false; /* Safari */
+            self.o_ctx['msImageSmoothingEnabled'] = false;     /* IE */
+
+            var s_font_css_url = `url(${self.s_font_url})`
+            var s_font_name = s_font_css_url.split('/').pop().split('.').slice(0, -1)
+            self.s_font_name = s_font_name
+            self.o_font = new FontFace(self.s_font_name, s_font_css_url);
+            self.o_font
+                .load()
+                .then(
+                    function (font) {
+                        console.log(`Font loaded from ${self.s_font_url}`);
+                        // with canvas, if self is ommited won't work
+                        document.fonts.add(font);
+                        self.o_ctx.fillStyle = "red";
+                        self.o_ctx.font = `${self.n_font_size_px}px ${self.s_font_name}`;
+                        // self.o_ctx.textBaseline="top"; // not supported with deno createCanvas
+                        var o_measured_text = self.o_ctx.measureText(self.s_string); 
+                        let fontHeight = o_measured_text.fontBoundingBoxAscent + o_measured_text.fontBoundingBoxDescent;
+                        let actualHeight = o_measured_text.actualBoundingBoxAscent + o_measured_text.actualBoundingBoxDescent;
+                        self.o_canvas.width = o_measured_text.width
+                        self.o_ctx.fillStyle = "red";
+                        self.o_ctx.font = `${self.n_font_size_px}px ${self.s_font_name}`;
+
+                        self.o_ctx.fillText(self.s_string, 0, actualHeight)
+                        console.log(o_measured_text)
+                        console.log(fontHeight)
+                        console.log(actualHeight)
+                        console.log(self.n_width_engough,self.n_font_size_px)
+                        var o_image_data = self.o_ctx.getImageData(0, o_measured_text.actualBoundingBoxDescent, o_measured_text.width,actualHeight)
+                        // check if image data array contains values other than 0
+                        // var data = o_image_data.data.filter(function(e) {
+                        //     return e !== 0;
+                        // });
+                        console.log('o_image_data');
+                        console.log(o_image_data);
+                        var n_channels = o_image_data.data.length / (o_image_data.width * o_image_data.height)
+                            // console.log(o_image_data.data.filter(o=> o!= 0))
+                        var n_i = 0;
+                        self.a_bitmap = []
+                        self.a_a_bitmap = []
+                        var n_x = 0;
+                        var n_y = 0;
+                        var n_pixel = 0;
+                        var a_y = []
+                        while(n_i < o_image_data.data.length){
+                            var n_channel_index = 0
+                            var n_value_sum = 0
+                            while(n_channel_index < n_channels){
+                                n_value_sum+=o_image_data.data[n_i+n_channel_index]
+                                n_channel_index+=1
+                            }
+                            a_y.push(n_value_sum)
+
+                            self.a_bitmap.push(n_value_sum)
+                            n_x = n_pixel % o_image_data.width; 
+                            n_y = parseInt(n_pixel / o_image_data.height)   
+                            if(n_x == (o_image_data.width-1)){
+                                self.a_a_bitmap.push(a_y)
+                                a_y = []
+                            }
+
+                            n_i += n_channels;
+                            n_pixel += 1
+                        }
+
+                        console.log(self)
+                        document.body.appendChild(self.o_canvas)
+
+                        f_resolve()
+                        // o_ctx.putImageData(window.od, 0, 0);
+                    }, 
+                    function(error){
+                        console.error(`font with url ${self.s_font_url} could not be loaded`)
+                        console.error(error)
+                    }
+                );
+        })
+
+    }
+    f_s_binary_text(
+        s_char_0 = ' ', 
+        s_char_1 = 'x'
+    ){
+
+        var n_y = 0;
+        var s = ''
+        while(n_y < this.a_a_bitmap.length){
+            var s_y = this.a_a_bitmap[n_y].map(n=>(n>0)?s_char_1: s_char_0).join('')
+            s+= s_y+"\n"
+            // console.log(n_y)
+            // console.log(s)
+            n_y +=1
+        }
+        return s
+    }
+}
+
+window.o_binary_string = new O_binary_string("O_binary_string", 10)
+await o_binary_string.f_init()
+console.log(o_binary_string.f_s_binary_text())
+console.log(o_binary_string.f_s_binary_text())
+console.log(o_binary_string.f_s_binary_text())
+
+
+
+        </script>
+        <script src="" async defer></script>
+    </body>
+</html>
