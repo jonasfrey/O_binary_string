@@ -161,7 +161,9 @@ class O_binary_string{
         //the letter may contain semitransparent pixels which would make it look smooth when 
         //looked at very small text, to use only certain pixels above a threshold we can adjust this value
         this._n_threshhold = 0.318
-
+        this.n_width = 0
+        this.n_height = 0
+        
         this.f_update_all()
 
     }
@@ -209,7 +211,8 @@ class O_binary_string{
     f_update_all(){
         this.f_init_canvas()
         this.f_fill_text_and_update_bitmaps()
-
+        this.n_width = this.o_canvas_data.o_image_data_cropped.width
+        this.n_height = this.o_canvas_data.o_image_data_cropped.height
         // console.log("---")
         // console.log(this.s_binary_text)
         // console.log("---")
