@@ -5,6 +5,21 @@ import { O_binary_string } from "./O_binary_string.module.js";
 const o_binary_string = new O_binary_string("O_binary_string", 10)
 console.log(o_binary_string.s_binary_text)
 
+
+// testing multiline string
+o_binary_string.s_string = 
+`
+O_ bin 
+   ary
+s
+t
+r
+i
+n
+g
+`
+console.log(o_binary_string.s_binary_text)
+
 // const o_binary_string = new O_binary_string("Axy!`", 10)
 // o_binary_string.n_threshhold = 0.318
 // console.log(o_binary_string.s_binary_text)

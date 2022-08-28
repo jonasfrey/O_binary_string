@@ -167,8 +167,10 @@ class O_binary_string{
     }
     f_init_canvas(){
         //in the beginning we have to guess the width and height of the text rendered in a certain font
-        var n_width_engough = this.n_font_size_px * 1.1 * this.s_string.length
-        var n_height_enought = this.n_font_size_px * 1.1 * this.s_string.length
+        var a_s_line = this.s_string.split('\n');
+        var n_s_line_maxlength = a_s_line.sort((a,b)=>b.length - a.length)[0].length
+        var n_width_engough = this.n_font_size_px * 1.1 * n_s_line_maxlength
+        var n_height_enought = this.n_font_size_px * 1.5 * a_s_line.length
         if(b_script_run_with_deno){
             this.o_canvas = Canvas.createCanvas(
                 parseInt(n_width_engough),
@@ -228,7 +230,19 @@ class O_binary_string{
         this.o_ctx.fillStyle = "red";
         this.o_ctx.font = `${this.n_font_size_px}px ${this.s_font_name}`;
         this.o_ctx.clearRect(0, 0, this.o_canvas.width, this.o_canvas.height);
-        this.o_ctx.fillText(this.s_string, 0, this.n_font_size_px)
+
+        var a_s_line = this.s_string.split('\n')
+        for(var n_i in a_s_line){
+            var s_line = String(a_s_line[n_i])
+            // console.log(s_line)
+            var n_y = parseInt(this.n_font_size_px)*(parseInt(n_i)+1)
+            if(s_line.trim() == ""){
+                continue
+            }
+            this.o_ctx.fillText(s_line, 0, n_y)
+        }
+        // this.o_ctx.fillText(this.s_string, 0, this.n_font_size_px)
+
         this.o_canvas_data = new O_canvas_data(this.o_canvas, this.o_ctx)
         //crop canvas
         if(b_script_run_with_deno){
